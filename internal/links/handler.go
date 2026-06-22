@@ -26,6 +26,8 @@ func (h *Handler) Register(mux *http.ServeMux) {
 	mux.Handle("GET /{code}", httpserver.WithError(h.resolve))
 }
 
+const maxRequestBodyBytes = 1 << 20
+
 type ShortenRequest struct {
 	URL string `json:"url"`
 }
@@ -65,6 +67,8 @@ type ErrorBody struct {
 // @Failure 500 {object} ErrorResponse
 // @Router /shorten [POST]
 func (h *Handler) shorten(w http.ResponseWriter, r *http.Request) error {
+	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodyBytes)
+
 	var req ShortenRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, errorBadRequest, "invalid json body")

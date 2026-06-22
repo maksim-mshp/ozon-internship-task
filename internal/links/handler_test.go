@@ -90,6 +90,18 @@ func TestHandler_ShortenInvalidURL(t *testing.T) {
 	require.Equal(t, errorInvalidURL, decodeErrorCode(t, rec))
 }
 
+func TestHandler_ShortenBodyTooLarge(t *testing.T) {
+	t.Parallel()
+	mux := newTestHandler("ABCDEFGHIJ")
+
+	huge := `{"url":"https://example.com/` + strings.Repeat("a", 2*maxRequestBodyBytes) + `"}`
+	req := httptest.NewRequest(http.MethodPost, "/shorten", strings.NewReader(huge))
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
 func TestHandler_ResolveNotFound(t *testing.T) {
 	t.Parallel()
 	mux := newTestHandler("ABCDEFGHIJ")
