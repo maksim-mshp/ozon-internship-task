@@ -32,7 +32,7 @@ func doJSON(t *testing.T, mux http.Handler, method, target string, body any) *ht
 
 func decodeErrorCode(t *testing.T, rec *httptest.ResponseRecorder) errorCode {
 	t.Helper()
-	var resp errorResponse
+	var resp ErrorResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resp))
 	return resp.Error.Code
 }
@@ -41,10 +41,10 @@ func TestHandler_ShortenAndResolve(t *testing.T) {
 	t.Parallel()
 	mux := newTestHandler("ABCDEFGHIJ")
 
-	rec := doJSON(t, mux, http.MethodPost, "/shorten", shortenRequest{URL: "https://example.com/page"})
+	rec := doJSON(t, mux, http.MethodPost, "/shorten", ShortenRequest{URL: "https://example.com/page"})
 	require.Equal(t, http.StatusCreated, rec.Code)
 
-	var created shortenResponse
+	var created ShortenResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &created))
 	require.Equal(t, "ABCDEFGHIJ", created.Code)
 	require.Equal(t, "http://short.test/ABCDEFGHIJ", created.ShortURL)
@@ -52,7 +52,7 @@ func TestHandler_ShortenAndResolve(t *testing.T) {
 	rec = doJSON(t, mux, http.MethodGet, "/"+created.Code, nil)
 	require.Equal(t, http.StatusOK, rec.Code)
 
-	var resolved resolveResponse
+	var resolved ResolveResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resolved))
 	require.Equal(t, "https://example.com/page", resolved.URL)
 }
@@ -61,9 +61,9 @@ func TestHandler_ShortenDeduplicates(t *testing.T) {
 	t.Parallel()
 	mux := newTestHandler("ABCDEFGHIJ")
 
-	first := doJSON(t, mux, http.MethodPost, "/shorten", shortenRequest{URL: "https://example.com"})
+	first := doJSON(t, mux, http.MethodPost, "/shorten", ShortenRequest{URL: "https://example.com"})
 	require.Equal(t, http.StatusCreated, first.Code)
-	second := doJSON(t, mux, http.MethodPost, "/shorten", shortenRequest{URL: "https://example.com"})
+	second := doJSON(t, mux, http.MethodPost, "/shorten", ShortenRequest{URL: "https://example.com"})
 	require.Equal(t, http.StatusCreated, second.Code)
 
 	require.JSONEq(t, first.Body.String(), second.Body.String())
@@ -85,7 +85,7 @@ func TestHandler_ShortenInvalidURL(t *testing.T) {
 	t.Parallel()
 	mux := newTestHandler("ABCDEFGHIJ")
 
-	rec := doJSON(t, mux, http.MethodPost, "/shorten", shortenRequest{URL: "not a url"})
+	rec := doJSON(t, mux, http.MethodPost, "/shorten", ShortenRequest{URL: "not a url"})
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Equal(t, errorInvalidURL, decodeErrorCode(t, rec))
 }

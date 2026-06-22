@@ -1,0 +1,178 @@
+{
+    "components": {
+        "schemas": {
+            "links.ErrorBody": {
+                "properties": {
+                    "code": {
+                        "$ref": "#/components/schemas/links.errorCode"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "links.ErrorResponse": {
+                "properties": {
+                    "error": {
+                        "$ref": "#/components/schemas/links.ErrorBody"
+                    }
+                },
+                "type": "object"
+            },
+            "links.ResolveResponse": {
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "links.ShortenRequest": {
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "links.ShortenResponse": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "short_url": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "links.errorCode": {
+                "enum": [
+                    "BAD_REQUEST",
+                    "INVALID_URL",
+                    "NOT_FOUND",
+                    "INTERNAL_ERROR"
+                ],
+                "type": "string",
+                "x-enum-varnames": [
+                    "errorBadRequest",
+                    "errorInvalidURL",
+                    "errorNotFound",
+                    "errorInternal"
+                ]
+            }
+        }
+    },
+    "info": {
+        "description": "Сервис укорачивания ссылок",
+        "title": "Link Shortener API",
+        "version": ""
+    },
+    "externalDocs": {
+        "description": "",
+        "url": ""
+    },
+    "paths": {
+        "/shorten": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/links.ShortenRequest",
+                                "summary": "request",
+                                "description": "ShortenRequest"
+                            }
+                        }
+                    },
+                    "description": "ShortenRequest",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/links.ShortenResponse"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/links.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/links.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Создать короткую ссылку",
+                "tags": [
+                    "Links"
+                ]
+            }
+        },
+        "/{code}": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "Короткий код",
+                        "in": "path",
+                        "name": "code",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/links.ResolveResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/links.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    }
+                },
+                "summary": "Получить оригинальный URL по короткому коду",
+                "tags": [
+                    "Links"
+                ]
+            }
+        }
+    },
+    "openapi": "3.1.0",
+    "servers": [
+        {
+            "url": "/"
+        }
+    ]
+}

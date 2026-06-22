@@ -38,6 +38,7 @@ func New(ctx context.Context, cfg *config.Config) (*App, error) {
 		return nil
 	}))
 	handler.Register(mux)
+	httpserver.RegisterSwagger(mux)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),

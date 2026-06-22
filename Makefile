@@ -17,7 +17,7 @@ lint:
 	@golangci-lint run ./...
 
 openapi: install-deps
-	@swag init -g internal/app/app.go --output api --outputTypes json,yaml --v3.1
+	@swag init -g internal/httpserver/swagger.go --exclude _codex --output api --outputTypes json,yaml --v3.1
 	@mv api/swagger.json api/openapi.json
 	@mv api/swagger.yaml api/openapi.yml
 
