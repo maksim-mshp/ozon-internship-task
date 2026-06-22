@@ -1,0 +1,15 @@
+.git
+.gitignore
+.github
+.idea
+.vscode
+Dockerfile
+docker-compose.yml
+.dockerignore
+.env
+.env.example
+*.md
+Makefile
+coverage/
+tests
+_codex

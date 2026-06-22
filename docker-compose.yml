@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    command: -p ${POSTGRES_PORT:-5432}
+    environment:
+      - POSTGRES_DB=${POSTGRES_DATABASE:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -p ${POSTGRES_PORT:-5432}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - ${PORT:-8080}:${PORT:-8080}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - PORT=${PORT:-8080}
+      - STORAGE=${STORAGE:-postgres}
+      - BASE_URL=${BASE_URL:-http://localhost:8080}
+      - SHORTCODE_LENGTH=${SHORTCODE_LENGTH:-10}
+      - SHORTCODE_ALPHABET=${SHORTCODE_ALPHABET:-ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_}
+      - SHORTCODE_MAX_RETRIES=${SHORTCODE_MAX_RETRIES:-5}
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+
+volumes:
+  postgres_data:
