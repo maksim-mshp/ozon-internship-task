@@ -1,0 +1,79 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go mod download
+      - run: go build ./...
+      - run: mkdir -p bin
+      - run: go build -o bin/shortener ./cmd/shortener
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shortener-binary
+          path: bin/shortener
+
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go mod download
+      - run: go test -v -short -coverpkg=./... ./... -coverprofile=coverage.out
+      - run: go tool cover -html=coverage.out -o coverage.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage.html
+
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go mod download
+      - run: go test -v -coverpkg=./... ./tests/integration/... -coverprofile=integration-coverage.out
+      - run: |
+          printf 'Total coverage: '
+          go tool cover -func=integration-coverage.out | awk '/^total:/ {print $3}'
+
+  gofmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: test -z "$(gofmt -l $(git ls-files '*.go'))"
+
+  golint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go mod download
+      - run: make install-deps
+      - run: make lint
